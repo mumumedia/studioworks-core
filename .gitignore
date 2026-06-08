@@ -1,0 +1,47 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+ENV/
+
+# Environment variables - sensitive data
+.env
+.env.*
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Audio files
+*.mp3
+*.wav
+*.aif
+*.aiff
+
+# Temporary files
+*.bak
+*.tmp
+*.log
+
+# Ableton-specific
+*.als
+*.alc
+*.adg
+*.adv
+*.asd
+!AbletonMCP_Remote_Script/*
+
+# Project management (internal workflow files)
+.paul/
