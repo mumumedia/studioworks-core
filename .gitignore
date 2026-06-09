@@ -20,6 +20,9 @@ ENV/
 .vscode/
 *.sublime-*
 
+# Local MCP server config (machine-specific paths)
+.mcp.json
+
 # System files
 .DS_Store
 Thumbs.db
