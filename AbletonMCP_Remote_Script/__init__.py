@@ -963,14 +963,21 @@ class AbletonMCP(ControlSurface):
 
             clip = clip_slot.clip
 
+            if not clip.is_midi_clip:
+                raise ValueError("Clip is not a MIDI clip")
+
             if to_time is None:
                 to_time = clip.length
 
             from_pitch = max(0, min(127, from_pitch))
             to_pitch = max(from_pitch, min(127, to_pitch))
             from_time = max(0.0, from_time)
+            to_time = max(from_time, to_time)
 
-            clip.remove_notes(from_pitch, to_pitch, from_time, to_time)
+            time_span = to_time - from_time
+            pitch_span = to_pitch - from_pitch + 1
+
+            clip.remove_notes(from_time, from_pitch, time_span, pitch_span)
 
             return {"deleted": True}
         except Exception as e:
@@ -995,8 +1002,17 @@ class AbletonMCP(ControlSurface):
 
             clip = clip_slot.clip
 
+            if not clip.is_midi_clip:
+                raise ValueError("Clip is not a MIDI clip")
+
             live_notes = tuple(
-                (n["pitch"], n["start_time"], n["duration"], n["velocity"], n.get("mute", False))
+                (
+                    n.get("pitch", 60),
+                    n.get("start_time", 0.0),
+                    n.get("duration", 0.25),
+                    n.get("velocity", 100),
+                    n.get("mute", False),
+                )
                 for n in notes
             )
 

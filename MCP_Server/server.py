@@ -775,7 +775,7 @@ def replace_clip_notes(
     ctx: Context,
     track_index: int,
     clip_index: int,
-    notes: list,
+    notes: List[Dict[str, Union[int, float, bool]]],
 ) -> str:
     """
     Replace all notes in a Session View MIDI clip with a new set of notes.
