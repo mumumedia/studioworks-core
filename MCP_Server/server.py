@@ -712,6 +712,98 @@ def stop_clip(ctx: Context, track_index: int, clip_index: int) -> str:
         return f"Error stopping clip: {str(e)}"
 
 @mcp.tool()
+def delete_clip(ctx: Context, track_index: int, clip_index: int) -> str:
+    """
+    Delete a clip from a Session View clip slot.
+
+    Parameters:
+    - track_index: Track number (1-based).
+    - clip_index: Clip slot number (1-based).
+    """
+    try:
+        ableton = get_ableton_connection()
+        ti = _to_zero_based(track_index, "track_index")
+        ci = _to_zero_based(clip_index, "clip_index")
+        ableton.send_command("delete_clip", {"track_index": ti, "clip_index": ci})
+        return f"Deleted clip at track {track_index}, slot {clip_index}"
+    except Exception as e:
+        logger.error(f"Error deleting clip: {str(e)}")
+        return f"Error deleting clip: {str(e)}"
+
+@mcp.tool()
+def delete_notes_from_clip(
+    ctx: Context,
+    track_index: int,
+    clip_index: int,
+    from_pitch: int = 0,
+    to_pitch: int = 127,
+    from_time: float = 0.0,
+    to_time: float = 0.0,
+) -> str:
+    """
+    Delete notes from a Session View MIDI clip by pitch and time range.
+    Omit all range params to delete all notes. to_time=0 means full clip length.
+
+    Parameters:
+    - track_index: Track number (1-based).
+    - clip_index: Clip slot number (1-based).
+    - from_pitch: Lowest MIDI pitch to remove (0-127, default 0).
+    - to_pitch: Highest MIDI pitch to remove inclusive (0-127, default 127 = all pitches).
+    - from_time: Start time in beats (default 0.0).
+    - to_time: End time in beats; 0 means use full clip length (default 0).
+    """
+    try:
+        ableton = get_ableton_connection()
+        ti = _to_zero_based(track_index, "track_index")
+        ci = _to_zero_based(clip_index, "clip_index")
+        cmd_params = {
+            "track_index": ti,
+            "clip_index": ci,
+            "from_pitch": from_pitch,
+            "to_pitch": to_pitch,
+            "from_time": from_time,
+            "to_time": to_time if to_time > 0 else None,
+        }
+        ableton.send_command("delete_notes_from_clip", cmd_params)
+        return f"Deleted notes from track {track_index}, slot {clip_index}"
+    except Exception as e:
+        logger.error(f"Error deleting notes from clip: {str(e)}")
+        return f"Error deleting notes from clip: {str(e)}"
+
+@mcp.tool()
+def replace_clip_notes(
+    ctx: Context,
+    track_index: int,
+    clip_index: int,
+    notes: list,
+) -> str:
+    """
+    Replace all notes in a Session View MIDI clip with a new set of notes.
+    Clears existing notes then sets the new ones. Pass an empty list to clear all notes.
+    If the replace fails, an error is returned and the clip state is reported as potentially empty.
+
+    Parameters:
+    - track_index: Track number (1-based).
+    - clip_index: Clip slot number (1-based).
+    - notes: List of note dicts: [{pitch, start_time, duration, velocity, mute?}].
+      pitch: MIDI note number (0-127). velocity: 0-127. start_time/duration: beats.
+    """
+    try:
+        ableton = get_ableton_connection()
+        ti = _to_zero_based(track_index, "track_index")
+        ci = _to_zero_based(clip_index, "clip_index")
+        result = ableton.send_command("replace_clip_notes", {
+            "track_index": ti,
+            "clip_index": ci,
+            "notes": notes,
+        })
+        count = result.get("note_count", len(notes)) if isinstance(result, dict) else len(notes)
+        return f"Replaced notes in track {track_index}, slot {clip_index} — {count} notes set"
+    except Exception as e:
+        logger.error(f"Error replacing clip notes: {str(e)}")
+        return f"Error replacing clip notes: {str(e)}"
+
+@mcp.tool()
 def start_playback(ctx: Context) -> str:
     """Start playing the Ableton session."""
     try:

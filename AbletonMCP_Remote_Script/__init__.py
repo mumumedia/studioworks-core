@@ -229,7 +229,8 @@ class AbletonMCP(ControlSurface):
             # Commands that modify Live's state should be scheduled on the main thread
             elif command_type in ["create_midi_track", "set_track_name",
                                  "create_clip", "add_notes_to_clip", "set_clip_name",
-                                 "set_tempo", "fire_clip", "stop_clip",
+                                 "set_tempo", "fire_clip", "stop_clip", "delete_clip",
+                                 "delete_notes_from_clip", "replace_clip_notes",
                                  "start_playback", "stop_playback", "load_browser_item",
                                  "set_song_time", "set_arrangement_loop", "jump_to_cue",
                                  "create_cue_point", "delete_cue_point",
@@ -283,6 +284,23 @@ class AbletonMCP(ControlSurface):
                             track_index = params.get("track_index", 0)
                             clip_index = params.get("clip_index", 0)
                             result = self._stop_clip(track_index, clip_index)
+                        elif command_type == "delete_clip":
+                            track_index = params.get("track_index", 0)
+                            clip_index = params.get("clip_index", 0)
+                            result = self._delete_session_clip(track_index, clip_index)
+                        elif command_type == "delete_notes_from_clip":
+                            track_index = params.get("track_index", 0)
+                            clip_index = params.get("clip_index", 0)
+                            from_pitch = params.get("from_pitch", 0)
+                            to_pitch = params.get("to_pitch", 127)
+                            from_time = params.get("from_time", 0.0)
+                            to_time = params.get("to_time", None)
+                            result = self._delete_notes_from_clip(track_index, clip_index, from_pitch, to_pitch, from_time, to_time)
+                        elif command_type == "replace_clip_notes":
+                            track_index = params.get("track_index", 0)
+                            clip_index = params.get("clip_index", 0)
+                            notes = params.get("notes", [])
+                            result = self._replace_clip_notes(track_index, clip_index, notes)
                         elif command_type == "start_playback":
                             result = self._start_playback()
                         elif command_type == "stop_playback":
@@ -902,8 +920,102 @@ class AbletonMCP(ControlSurface):
         except Exception as e:
             self.log_message("Error stopping clip: " + str(e))
             raise
-    
-    
+
+    def _delete_session_clip(self, track_index, clip_index):
+        """Delete a clip from a Session View clip slot, stopping it first if playing."""
+        try:
+            if track_index < 0 or track_index >= len(self._song.tracks):
+                raise IndexError("Track index out of range")
+
+            track = self._song.tracks[track_index]
+
+            if clip_index < 0 or clip_index >= len(track.clip_slots):
+                raise IndexError("Clip index out of range")
+
+            clip_slot = track.clip_slots[clip_index]
+
+            if not clip_slot.has_clip:
+                raise ValueError("No clip in slot")
+
+            clip_slot.stop()
+            clip_slot.delete_clip()
+
+            return {"deleted": True, "track_index": track_index, "clip_index": clip_index}
+        except Exception as e:
+            self.log_message("Error deleting session clip: " + str(e))
+            raise
+
+    def _delete_notes_from_clip(self, track_index, clip_index, from_pitch, to_pitch, from_time, to_time):
+        """Delete notes from a Session View MIDI clip by pitch and time range."""
+        try:
+            if track_index < 0 or track_index >= len(self._song.tracks):
+                raise IndexError("Track index out of range")
+
+            track = self._song.tracks[track_index]
+
+            if clip_index < 0 or clip_index >= len(track.clip_slots):
+                raise IndexError("Clip index out of range")
+
+            clip_slot = track.clip_slots[clip_index]
+
+            if not clip_slot.has_clip:
+                raise ValueError("No clip in slot")
+
+            clip = clip_slot.clip
+
+            if to_time is None:
+                to_time = clip.length
+
+            from_pitch = max(0, min(127, from_pitch))
+            to_pitch = max(from_pitch, min(127, to_pitch))
+            from_time = max(0.0, from_time)
+
+            clip.remove_notes(from_pitch, to_pitch, from_time, to_time)
+
+            return {"deleted": True}
+        except Exception as e:
+            self.log_message("Error deleting notes from clip: " + str(e))
+            raise
+
+    def _replace_clip_notes(self, track_index, clip_index, notes):
+        """Replace all notes in a Session View MIDI clip atomically."""
+        try:
+            if track_index < 0 or track_index >= len(self._song.tracks):
+                raise IndexError("Track index out of range")
+
+            track = self._song.tracks[track_index]
+
+            if clip_index < 0 or clip_index >= len(track.clip_slots):
+                raise IndexError("Clip index out of range")
+
+            clip_slot = track.clip_slots[clip_index]
+
+            if not clip_slot.has_clip:
+                raise ValueError("No clip in slot")
+
+            clip = clip_slot.clip
+
+            live_notes = tuple(
+                (n["pitch"], n["start_time"], n["duration"], n["velocity"], n.get("mute", False))
+                for n in notes
+            )
+
+            clip.select_all_notes()
+            try:
+                clip.replace_selected_notes(live_notes)
+            except Exception as replace_err:
+                self.log_message(
+                    "replace_clip_notes: replace failed after selecting all notes — clip may be empty: "
+                    + str(replace_err)
+                )
+                raise
+
+            return {"replaced": True, "note_count": len(notes)}
+        except Exception as e:
+            self.log_message("Error replacing clip notes: " + str(e))
+            raise
+
+
     def _start_playback(self):
         """Start playing the session"""
         try:
