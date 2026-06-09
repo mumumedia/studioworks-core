@@ -1,12 +1,12 @@
 # Ableton MCP Extended
-**Control Ableton Live using natural language via AI assistants like Claude or Cursor. This project provides a robust Model Context Protocol (MCP) server that translates natural language commands into precise actions within your Ableton Live session.**
+**Control Ableton Live using natural language via AI assistants like Claude or VS Code (Antigravity, Cursor, Devin etc). This project provides a robust Model Context Protocol (MCP) server that translates natural language commands into precise actions within your Ableton Live session.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Ableton Live 11+](https://img.shields.io/badge/Ableton%20Live-11+-orange.svg)](https://www.ableton.com/)
 
-This project is a fork of the original Ableton MCP project, which can be found here: https://github.com/uisato/ableton-mcp
-It also includes additional features and improvements to the original project.
+This project is a fork of the original Ableton MCP Extended project, which can be found here: https://github.com/uisato/ableton-mcp-extended
+It also includes additional features and improvements to the original project and takes in further skills developed by: https://github.com/glincker/ableton-skills 
 
 ---
 
@@ -232,14 +232,6 @@ This project includes several specialized components:
 
 - **GitHub Issues**: Bug reports and feature requests
 - **Discussions**: Share your creations and get help
-
-### **Share Your Creations**
-Tag me with your AI-generated experiments! I love seeing what the community creates:
-
-[YouTube](https://www.youtube.com/@uisato_) |
-[Instagram](https://www.instagram.com/uisato_) |
-[Patreon](https://www.patreon.com/c/uisato) |
-[Website](https://www.uisato.art/) 
 
 ---
 
