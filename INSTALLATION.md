@@ -1,8 +1,6 @@
 # Installation Guide
 **Get Ableton MCP Extended running in under 10 minutes**
 
-> **Want to see what's possible first?** Check out our [capabilities demonstration video](#-capabilities-demonstration) to see Ableton MCP Extended in action before installing!
-
 ---
 
 ## Prerequisites
