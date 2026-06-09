@@ -26,7 +26,7 @@ Confirm with user: "Sidechain target = bass on track 2, source = kick on track 1
 - Settings:
   - Ratio: 4:1
   - Attack: 5 ms
-  - Release: 80-120 ms (release should match the tempo — at 120 BPM, 1 beat = 500ms, so 100ms ≈ 1/8 note)
+  - Release: 80-120 ms (release should match the tempo — at 120 BPM, 1 beat = 500ms, so 125ms ≈ 1/16 note)
   - Threshold: set so that GR shows -4 to -6 dB on each kick hit
   - Output gain: +1 to +2 dB to compensate
 

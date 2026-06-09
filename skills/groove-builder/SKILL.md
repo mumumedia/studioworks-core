@@ -57,7 +57,7 @@ Hat:   X X X X X X X X X X X X X X X X   (16ths)
 #### Trap
 ```
 Kick:  X . . . . . . X . . . . . . . .   (sparse, half-time feel)
-Snare: . . . . X . . . . . . . X . . .
+Snare: . . . . . . . . X . . . . . . .   (snare on beat 3 only — half-time feel)
 Hat:   X X . X X X . X X . X X X . X X   (rolling, with stutters)
 808:   long held bass notes underneath
 ```

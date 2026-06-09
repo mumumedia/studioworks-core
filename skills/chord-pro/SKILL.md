@@ -93,6 +93,6 @@ Output:
 - Bar 1: LH F2-C3, RH Ab3-C4-Eb4 (Fm)
 - Bar 2: LH Db2-Ab2, RH F3-Ab3-Db4 (Db, common tone Ab held)
 - Bar 3: LH Ab2-Eb3, RH C4-Eb4-G4 (Ab, ascending top voice)
-- Bar 4: LH Eb2-Bb2, RH G3-Bb3-Eb4 (Eb, dominant pull back to Fm)
+- Bar 4: LH Eb2-Bb2, RH G3-Bb3-Eb4 (Eb, subtonic resolution back to Fm)
 
 Apply with `add_notes_to_clip`. Length = 1 bar each, velocity 90 default.

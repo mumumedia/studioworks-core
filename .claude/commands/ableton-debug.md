@@ -24,7 +24,7 @@ Walk through a structured diagnostic when something's broken between Claude/Curs
 | AbletonMCP not in Control Surface dropdown | Script in wrong directory | Verify `__init__.py` is in `~/Library/Preferences/Ableton/Live X/User Remote Scripts/AbletonMCP/` (Mac) or equivalent on Windows |
 | "Script has expired" | Live's script cache is corrupted | Delete `Live X` folder in Preferences, restart Live, reinstall script |
 | WSL2 connection refused | Wrong host (localhost ≠ Windows host from WSL) | Use `host.docker.internal` or Windows IP from inside WSL |
-| Live 12 doesn't see script | Live 12 changed Remote Scripts directory | Use `~/Documents/Ableton/User Library/Remote Scripts/` instead |
+| Live 12 doesn't see script | Live 12 changed Remote Scripts directory | Use `~/Music/Ableton/User Library/Remote Scripts/` instead |
 | Smithery install flagged as Trojan | False positive on bundled binary | Install MCP server manually, skip Smithery |
 | Tools work but params don't change | Live is in a different view (Arrangement vs Session) | Check `current_view`; some operations only work in one view |
 
