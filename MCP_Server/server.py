@@ -338,9 +338,10 @@ _BROWSER_KEYWORD_TAGS: Dict[str, List[str]] = {
 def _tags_for_browser_item(path: str, name: str) -> List[str]:
     """Return semantic tags for a browser item based on its path and name."""
     combined = (path + " " + name).lower()
+    tokens = re.findall(r"[a-z0-9]+", combined)
     tags: set = set()
     for keyword, kw_tags in _BROWSER_KEYWORD_TAGS.items():
-        if keyword in combined:
+        if any(token.startswith(keyword) for token in tokens):
             tags.update(kw_tags)
     return sorted(tags)
 
