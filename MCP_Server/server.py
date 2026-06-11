@@ -307,6 +307,44 @@ _external_plugin_cache: Dict[str, Any] = {
     "built_at": 0.0,
 }
 
+# Keyword → semantic tags mapping for browser item augmentation
+_BROWSER_KEYWORD_TAGS: Dict[str, List[str]] = {
+    "bass":    ["bass", "low-end"],
+    "sub":     ["bass", "sub-bass"],
+    "808":     ["808", "bass", "trap"],
+    "lead":    ["lead", "synth"],
+    "pad":     ["ambient", "pad"],
+    "chord":   ["chord", "poly"],
+    "arp":     ["arp", "sequenced"],
+    "pluck":   ["pluck", "short-decay"],
+    "keys":    ["keys", "piano"],
+    "piano":   ["keys", "piano"],
+    "organ":   ["keys", "organ"],
+    "guitar":  ["guitar"],
+    "strings": ["orchestral", "strings"],
+    "brass":   ["brass", "orchestral"],
+    "drum":    ["drums", "percussion"],
+    "kick":    ["drums", "kick"],
+    "snare":   ["drums", "snare"],
+    "hat":     ["drums", "hi-hat"],
+    "perc":    ["drums", "percussion"],
+    "fx":      ["fx", "texture"],
+    "ambient": ["ambient", "atmospheric"],
+    "texture": ["ambient", "texture"],
+    "noise":   ["fx", "noise"],
+}
+
+
+def _tags_for_browser_item(path: str, name: str) -> List[str]:
+    """Return semantic tags for a browser item based on its path and name."""
+    combined = (path + " " + name).lower()
+    tokens = re.findall(r"[a-z0-9]+", combined)
+    tags: set = set()
+    for keyword, kw_tags in _BROWSER_KEYWORD_TAGS.items():
+        if any(token.startswith(keyword) for token in tokens):
+            tags.update(kw_tags)
+    return sorted(tags)
+
 
 def _invalidate_external_plugin_cache() -> None:
     """Invalidate cached external plugin discovery results."""
@@ -819,6 +857,12 @@ def get_browser_items_at_path(ctx: Context, path: str) -> str:
             return (f"Error: {error}\n"
                    f"Available browser categories: {', '.join(available_cats)}")
         
+        # Augment items with semantic tags
+        browsed_path = result.get("path", path)
+        for item in result.get("items", []):
+            tags = _tags_for_browser_item(browsed_path, item.get("name", ""))
+            if tags:
+                item["tags"] = tags
         return json.dumps(result, separators=(',', ':'))
     except Exception as e:
         error_msg = str(e)

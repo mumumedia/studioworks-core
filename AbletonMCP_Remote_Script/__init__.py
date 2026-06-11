@@ -352,9 +352,10 @@ class AbletonMCP(ControlSurface):
                         elif command_type == "manage_clip_automation":
                             ti = params.get("track_index", 0)
                             ci = params.get("clip_index", 0)
+                            cn = params.get("clip_name", None)
                             action = params.get("action", "create")
                             pn = params.get("parameter_name", "")
-                            result = self._manage_clip_automation(ti, ci, action, pn, params)
+                            result = self._manage_clip_automation(ti, ci, action, pn, params, cn)
                         elif command_type == "add_notes_to_arrangement_clip":
                             ti = params.get("track_index", 0)
                             ci = params.get("clip_index", 0)
@@ -1561,10 +1562,10 @@ class AbletonMCP(ControlSurface):
             self.log_message("Error controlling arrangement view: " + str(e))
             raise
 
-    def _manage_clip_automation(self, track_index, clip_index, action, parameter_name="", params=None):
+    def _manage_clip_automation(self, track_index, clip_index, action, parameter_name="", params=None, clip_name=None):
         """Create or clear automation envelopes."""
         try:
-            track, clip = self._resolve_arrangement_clip(track_index, clip_index)
+            track, clip = self._resolve_arrangement_clip(track_index, clip_index, clip_name)
             if action == "clear_all":
                 clip.clear_all_envelopes()
                 return {"action": "clear_all", "done": True}
