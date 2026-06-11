@@ -117,6 +117,7 @@ class AbletonConnection:
             "set_view", "control_arrangement_view",
             "manage_clip_automation",
             "add_notes_to_arrangement_clip",
+            "delete_notes_from_arrangement_clip", "replace_arrangement_clip_notes",
             "set_device_parameter", "set_device_enabled",
             "delete_device", "navigate_preset",
             "set_track_volume", "set_track_panning",
@@ -1592,6 +1593,167 @@ def set_arrangement_clip_property(
     except Exception as e:
         logger.error(f"Error setting arrangement clip property: {str(e)}")
         return f"Error setting arrangement clip property: {str(e)}"
+
+
+@mcp.tool()
+def add_notes_to_arrangement_clip(
+    ctx: Context,
+    track_index: int,
+    clip_index: int,
+    notes: List[Dict[str, Union[int, float, bool]]],
+) -> str:
+    """Add MIDI notes to an arrangement clip without clearing existing notes.
+
+    Parameters:
+    - track_index: Track number (1-based).
+    - clip_index: Arrangement clip position (1-based, ordered by start_time).
+    - notes: List of note dicts: [{pitch, start_time, duration, velocity, mute?}].
+      pitch: MIDI note number (0-127). velocity: 0-127. start_time/duration: beats.
+    """
+    try:
+        ableton = get_ableton_connection()
+        ti = _to_zero_based(track_index, "track_index")
+        ci = _to_zero_based(clip_index, "clip_index")
+        result = ableton.send_command("add_notes_to_arrangement_clip", {
+            "track_index": ti,
+            "clip_index": ci,
+            "notes": notes,
+        })
+        count = result.get("note_count", len(notes)) if isinstance(result, dict) else len(notes)
+        return f"Added {count} note(s) to arrangement clip {clip_index} on track {track_index}"
+    except Exception as e:
+        logger.error(f"Error adding notes to arrangement clip: {str(e)}")
+        return f"Error adding notes to arrangement clip: {str(e)}"
+
+
+@mcp.tool()
+def get_arrangement_clip_notes(
+    ctx: Context,
+    track_index: int,
+    clip_index: int,
+    from_pitch: int = 0,
+    to_pitch: int = 127,
+    from_bar: int = 0,
+    from_beat: float = 0.0,
+    to_bar: int = 0,
+    to_beat: float = 0.0,
+) -> str:
+    """Read MIDI notes from an arrangement clip.
+
+    Parameters:
+    - track_index: Track number (1-based).
+    - clip_index: Arrangement clip position (1-based).
+    - from_pitch: Lowest pitch to include (0-127, default 0).
+    - to_pitch: Highest pitch to include (0-127, default 127 = all).
+    - from_bar: Start bar (1-based). Takes precedence over from_beat.
+    - from_beat: Start position in beats.
+    - to_bar: End bar (1-based). Takes precedence over to_beat.
+    - to_beat: End position in beats (0 = full clip length).
+    """
+    try:
+        ableton = get_ableton_connection()
+        num, denom = _get_time_signature()
+        from_time = bar_to_beat(from_bar, num, denom) if from_bar > 0 else from_beat
+        to_time = bar_to_beat(to_bar, num, denom) if to_bar > 0 else (to_beat if to_beat > 0 else None)
+
+        ti = _to_zero_based(track_index, "track_index")
+        ci = _to_zero_based(clip_index, "clip_index")
+        result = ableton.send_command("get_arrangement_clip_notes", {
+            "track_index": ti,
+            "clip_index": ci,
+            "from_pitch": from_pitch,
+            "to_pitch": to_pitch,
+            "from_time": from_time,
+            "to_time": to_time,
+        })
+        notes = result.get("notes", [])
+        if not notes:
+            return f"No notes in arrangement clip {clip_index} on track {track_index}"
+
+        lines = [f"=== Notes: track {track_index}, clip {clip_index} ({len(notes)} notes) ==="]
+        for n in notes:
+            muted = " [muted]" if n.get("mute") else ""
+            bar = beat_to_bar(n.get("start_time", 0), num, denom)
+            lines.append(
+                f"  pitch={n['pitch']} bar={bar} dur={n.get('duration', 0):.3f} vel={n.get('velocity', 0)}{muted}"
+            )
+        return "\n".join(lines)
+    except Exception as e:
+        logger.error(f"Error getting arrangement clip notes: {str(e)}")
+        return f"Error getting arrangement clip notes: {str(e)}"
+
+
+@mcp.tool()
+def delete_notes_from_arrangement_clip(
+    ctx: Context,
+    track_index: int,
+    clip_index: int,
+    from_pitch: int = 0,
+    to_pitch: int = 127,
+    from_time: float = 0.0,
+    to_time: float = 0.0,
+) -> str:
+    """Delete notes from an arrangement MIDI clip by pitch and time range.
+    Omit all range params to delete all notes. to_time=0 means full clip length.
+
+    Parameters:
+    - track_index: Track number (1-based).
+    - clip_index: Arrangement clip position (1-based).
+    - from_pitch: Lowest MIDI pitch to remove (0-127, default 0).
+    - to_pitch: Highest MIDI pitch to remove inclusive (0-127, default 127 = all).
+    - from_time: Start time in beats (default 0.0).
+    - to_time: End time in beats; 0 means use full clip length (default 0).
+    """
+    try:
+        ableton = get_ableton_connection()
+        ti = _to_zero_based(track_index, "track_index")
+        ci = _to_zero_based(clip_index, "clip_index")
+        ableton.send_command("delete_notes_from_arrangement_clip", {
+            "track_index": ti,
+            "clip_index": ci,
+            "from_pitch": from_pitch,
+            "to_pitch": to_pitch,
+            "from_time": from_time,
+            "to_time": to_time if to_time > 0 else None,
+        })
+        return f"Deleted notes from arrangement clip {clip_index} on track {track_index}"
+    except Exception as e:
+        logger.error(f"Error deleting notes from arrangement clip: {str(e)}")
+        return f"Error deleting notes from arrangement clip: {str(e)}"
+
+
+@mcp.tool()
+def replace_arrangement_clip_notes(
+    ctx: Context,
+    track_index: int,
+    clip_index: int,
+    notes: List[Dict[str, Union[int, float, bool]]],
+) -> str:
+    """Replace all notes in an arrangement MIDI clip with a new set.
+    Clears existing notes then sets the new ones atomically. If replace fails,
+    an error is returned and the clip state is reported as potentially empty.
+
+    Parameters:
+    - track_index: Track number (1-based).
+    - clip_index: Arrangement clip position (1-based).
+    - notes: List of note dicts: [{pitch, start_time, duration, velocity, mute?}].
+      pitch: MIDI note number (0-127). velocity: 0-127. start_time/duration: beats.
+    """
+    try:
+        ableton = get_ableton_connection()
+        ti = _to_zero_based(track_index, "track_index")
+        ci = _to_zero_based(clip_index, "clip_index")
+        result = ableton.send_command("replace_arrangement_clip_notes", {
+            "track_index": ti,
+            "clip_index": ci,
+            "notes": notes,
+        })
+        count = result.get("note_count", len(notes)) if isinstance(result, dict) else len(notes)
+        return (f"Replaced notes in arrangement clip {clip_index} on track {track_index} "
+                f"— {count} notes set")
+    except Exception as e:
+        logger.error(f"Error replacing arrangement clip notes: {str(e)}")
+        return f"Error replacing arrangement clip notes: {str(e)}"
 
 
 @mcp.tool()

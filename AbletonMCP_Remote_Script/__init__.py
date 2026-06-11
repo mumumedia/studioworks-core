@@ -140,7 +140,7 @@ class AbletonMCP(ControlSurface):
             while self.running:
                 try:
                     # Receive data
-                    data = client.recv(8192)
+                    data = client.recv(65536)
                     
                     if not data:
                         # Client disconnected
@@ -239,6 +239,8 @@ class AbletonMCP(ControlSurface):
                                  "set_view", "control_arrangement_view",
                                  "manage_clip_automation",
                                  "add_notes_to_arrangement_clip",
+                                 "delete_notes_from_arrangement_clip",
+                                 "replace_arrangement_clip_notes",
                                  "set_device_parameter", "set_device_enabled",
                                  "delete_device", "navigate_preset",
                                  "delete_track",
@@ -358,6 +360,19 @@ class AbletonMCP(ControlSurface):
                             ci = params.get("clip_index", 0)
                             notes = params.get("notes", [])
                             result = self._add_notes_to_arrangement_clip(ti, ci, notes)
+                        elif command_type == "delete_notes_from_arrangement_clip":
+                            ti = params.get("track_index", 0)
+                            ci = params.get("clip_index", 0)
+                            from_pitch = params.get("from_pitch", 0)
+                            to_pitch = params.get("to_pitch", 127)
+                            from_time = params.get("from_time", 0.0)
+                            to_time = params.get("to_time", None)
+                            result = self._delete_notes_from_arrangement_clip(ti, ci, from_pitch, to_pitch, from_time, to_time)
+                        elif command_type == "replace_arrangement_clip_notes":
+                            ti = params.get("track_index", 0)
+                            ci = params.get("clip_index", 0)
+                            notes = params.get("notes", [])
+                            result = self._replace_arrangement_clip_notes(ti, ci, notes)
                         # Device modifying commands
                         elif command_type == "set_device_parameter":
                             ti = params.get("track_index", 0)
@@ -444,6 +459,14 @@ class AbletonMCP(ControlSurface):
             elif command_type == "get_arrangement_info":
                 track_index = params.get("track_index", -1)
                 response["result"] = self._get_arrangement_info(track_index)
+            elif command_type == "get_arrangement_clip_notes":
+                ti = params.get("track_index", 0)
+                ci = params.get("clip_index", 0)
+                from_pitch = params.get("from_pitch", 0)
+                to_pitch = params.get("to_pitch", 127)
+                from_time = params.get("from_time", 0.0)
+                to_time = params.get("to_time", None)
+                response["result"] = self._get_arrangement_clip_notes(ti, ci, from_pitch, to_pitch, from_time, to_time)
             elif command_type == "get_cue_points":
                 response["result"] = self._get_cue_points()
             # Device read-only commands
@@ -1392,6 +1415,76 @@ class AbletonMCP(ControlSurface):
             return {"note_count": len(notes)}
         except Exception as e:
             self.log_message("Error adding notes to arrangement clip: " + str(e))
+            raise
+
+    def _get_arrangement_clip_notes(self, track_index, clip_index, from_pitch=0, to_pitch=127, from_time=0.0, to_time=None):
+        """Read MIDI notes from an arrangement clip."""
+        try:
+            track, clip = self._resolve_arrangement_clip(track_index, clip_index)
+            if not clip.is_midi_clip:
+                raise ValueError("Clip is not a MIDI clip")
+            if to_time is None:
+                to_time = clip.length
+            from_pitch = max(0, min(127, from_pitch))
+            to_pitch = max(from_pitch, min(127, to_pitch))
+            from_time = max(0.0, from_time)
+            to_time = max(from_time, to_time)
+            time_span = to_time - from_time
+            pitch_span = to_pitch - from_pitch + 1
+            raw = clip.get_notes(from_time, from_pitch, time_span, pitch_span)
+            notes = [
+                {"pitch": n[0], "start_time": n[1], "duration": n[2],
+                 "velocity": n[3], "mute": n[4]}
+                for n in raw
+            ]
+            return {"notes": notes, "count": len(notes)}
+        except Exception as e:
+            self.log_message("Error getting arrangement clip notes: " + str(e))
+            raise
+
+    def _delete_notes_from_arrangement_clip(self, track_index, clip_index, from_pitch=0, to_pitch=127, from_time=0.0, to_time=None):
+        """Delete MIDI notes from an arrangement clip by pitch/time range."""
+        try:
+            track, clip = self._resolve_arrangement_clip(track_index, clip_index)
+            if not clip.is_midi_clip:
+                raise ValueError("Clip is not a MIDI clip")
+            if to_time is None:
+                to_time = clip.length
+            from_pitch = max(0, min(127, from_pitch))
+            to_pitch = max(from_pitch, min(127, to_pitch))
+            from_time = max(0.0, from_time)
+            to_time = max(from_time, to_time)
+            time_span = to_time - from_time
+            pitch_span = to_pitch - from_pitch + 1
+            clip.remove_notes(from_time, from_pitch, time_span, pitch_span)
+            return {"deleted": True}
+        except Exception as e:
+            self.log_message("Error deleting notes from arrangement clip: " + str(e))
+            raise
+
+    def _replace_arrangement_clip_notes(self, track_index, clip_index, notes):
+        """Replace all notes in an arrangement clip with a new set."""
+        try:
+            track, clip = self._resolve_arrangement_clip(track_index, clip_index)
+            if not clip.is_midi_clip:
+                raise ValueError("Clip is not a MIDI clip")
+            live_notes = tuple(
+                (n.get("pitch", 60), n.get("start_time", 0.0), n.get("duration", 0.25),
+                 n.get("velocity", 100), n.get("mute", False))
+                for n in notes
+            )
+            clip.select_all_notes()
+            try:
+                clip.replace_selected_notes(live_notes)
+            except Exception as replace_err:
+                self.log_message(
+                    "replace_arrangement_clip_notes: replace failed after selecting all notes "
+                    "-- clip may be empty: " + str(replace_err)
+                )
+                raise
+            return {"replaced": True, "note_count": len(notes)}
+        except Exception as e:
+            self.log_message("Error replacing arrangement clip notes: " + str(e))
             raise
 
     def _delete_arrangement_clip(self, track_index, clip_index=None, clip_name=None):
