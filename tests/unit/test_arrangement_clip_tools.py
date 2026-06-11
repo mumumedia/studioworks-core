@@ -134,6 +134,7 @@ class TestGetArrangementClipNotes:
         result = get_arrangement_clip_notes(MagicMock(), track_index=1, clip_index=1)
 
         assert "pitch=60" in result
+        assert "start_time=0.000" in result
         assert "vel=100" in result
 
     @patch('MCP_Server.server.get_ableton_connection')
@@ -438,17 +439,32 @@ class TestArrangementClipHandlers:
         assert result["note_count"] == 2
 
     def test_replace_failure_logs_specific_message_and_raises(self):
-        """When replace_selected_notes raises, specific warning is logged and error propagates."""
+        """When replace_selected_notes AND set_notes fallback both raise, error propagates."""
         script = _make_script()
         clip = _make_midi_clip()
         clip.replace_selected_notes.side_effect = RuntimeError("api error")
+        clip.set_notes.side_effect = RuntimeError("fallback also failed")
         script._resolve_arrangement_clip = MagicMock(return_value=(MagicMock(), clip))
 
         with pytest.raises(RuntimeError):
             script._replace_arrangement_clip_notes(0, 0, [])
 
         log_calls = [str(c) for c in script.log_message.call_args_list]
-        assert any("replace failed after selecting all notes" in c for c in log_calls)
+        assert any("replace failed, trying fallback to set_notes" in c for c in log_calls)
+
+    def test_replace_failure_falls_back_to_set_notes(self):
+        """When replace_selected_notes raises but set_notes succeeds, no error is raised."""
+        script = _make_script()
+        clip = _make_midi_clip()
+        clip.replace_selected_notes.side_effect = RuntimeError("empty clip")
+        script._resolve_arrangement_clip = MagicMock(return_value=(MagicMock(), clip))
+
+        result = script._replace_arrangement_clip_notes(
+            0, 0, [{"pitch": 60, "start_time": 0.0, "duration": 0.25, "velocity": 100}]
+        )
+
+        clip.set_notes.assert_called_once()
+        assert result["replaced"] is True
 
     def test_replace_on_audio_clip_raises_value_error(self):
         script = _make_script()
@@ -458,7 +474,7 @@ class TestArrangementClipHandlers:
         with pytest.raises(ValueError, match="not a MIDI clip"):
             script._replace_arrangement_clip_notes(0, 0, [])
 
-    # --- _add_notes_to_arrangement_clip non-MIDI path (audit-added) ---
+    # --- _add_notes_to_arrangement_clip (audit-added + Finding 1) ---
 
     def test_add_notes_on_audio_clip_raises_value_error(self):
         """AC-1 handler-level: calling on non-MIDI clip raises ValueError."""
@@ -468,3 +484,20 @@ class TestArrangementClipHandlers:
 
         with pytest.raises(ValueError, match="not a MIDI clip"):
             script._add_notes_to_arrangement_clip(0, 0, [])
+
+    def test_add_notes_merges_with_existing_notes(self):
+        """Existing notes are fetched and merged; set_notes called with combined tuple."""
+        script = _make_script()
+        clip = _make_midi_clip(length=8.0)
+        clip.get_notes.return_value = ((36, 0.0, 0.25, 100, False),)
+        script._resolve_arrangement_clip = MagicMock(return_value=(MagicMock(), clip))
+
+        script._add_notes_to_arrangement_clip(
+            0, 0, [{"pitch": 60, "start_time": 1.0, "duration": 0.5, "velocity": 90}]
+        )
+
+        clip.get_notes.assert_called_once_with(0.0, 0, 8.0, 128)
+        called_notes = clip.set_notes.call_args[0][0]
+        assert len(called_notes) == 2
+        assert (36, 0.0, 0.25, 100, False) in called_notes
+        assert (60, 1.0, 0.5, 90, False) in called_notes

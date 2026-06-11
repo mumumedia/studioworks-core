@@ -1675,7 +1675,7 @@ def get_arrangement_clip_notes(
             muted = " [muted]" if n.get("mute") else ""
             bar = beat_to_bar(n.get("start_time", 0), num, denom)
             lines.append(
-                f"  pitch={n['pitch']} bar={bar} dur={n.get('duration', 0):.3f} vel={n.get('velocity', 0)}{muted}"
+                f"  pitch={n['pitch']} start_time={n.get('start_time', 0.0):.3f} bar={bar} dur={n.get('duration', 0):.3f} vel={n.get('velocity', 0)}{muted}"
             )
         return "\n".join(lines)
     except Exception as e:

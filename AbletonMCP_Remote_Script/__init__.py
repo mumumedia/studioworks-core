@@ -1398,20 +1398,21 @@ class AbletonMCP(ControlSurface):
             raise
 
     def _add_notes_to_arrangement_clip(self, track_index, clip_index, notes):
-        """Add MIDI notes to an arrangement clip."""
+        """Add MIDI notes to an arrangement clip without clearing existing notes."""
         try:
             track, clip = self._resolve_arrangement_clip(track_index, clip_index)
             if not clip.is_midi_clip:
                 raise ValueError("Clip is not a MIDI clip")
-            live_notes = []
+            existing_raw = clip.get_notes(0.0, 0, clip.length, 128)
+            merged = list(existing_raw)
             for note in notes:
                 pitch = note.get("pitch", 60)
                 start_time = note.get("start_time", 0.0)
                 duration = note.get("duration", 0.25)
                 velocity = note.get("velocity", 100)
                 mute = note.get("mute", False)
-                live_notes.append((pitch, start_time, duration, velocity, mute))
-            clip.set_notes(tuple(live_notes))
+                merged.append((pitch, start_time, duration, velocity, mute))
+            clip.set_notes(tuple(merged))
             return {"note_count": len(notes)}
         except Exception as e:
             self.log_message("Error adding notes to arrangement clip: " + str(e))
@@ -1478,10 +1479,17 @@ class AbletonMCP(ControlSurface):
                 clip.replace_selected_notes(live_notes)
             except Exception as replace_err:
                 self.log_message(
-                    "replace_arrangement_clip_notes: replace failed after selecting all notes "
-                    "-- clip may be empty: " + str(replace_err)
+                    "replace_arrangement_clip_notes: replace failed, trying fallback to set_notes: "
+                    + str(replace_err)
                 )
-                raise
+                try:
+                    clip.set_notes(live_notes)
+                except Exception as fallback_err:
+                    self.log_message(
+                        "replace_arrangement_clip_notes: fallback set_notes failed: "
+                        + str(fallback_err)
+                    )
+                    raise
             return {"replaced": True, "note_count": len(notes)}
         except Exception as e:
             self.log_message("Error replacing arrangement clip notes: " + str(e))
