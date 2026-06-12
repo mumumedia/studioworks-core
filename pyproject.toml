@@ -1,7 +1,7 @@
 [project]
-name = "ableton-mcp-extended"
+name = "studioworks-core"
 version = "1.0.0"
-description = "Ableton Live integration through the Model Context Protocol with ElevenLabs and extended features"
+description = "Ableton Live integration through the Model Context Protocol"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -14,29 +14,22 @@ classifiers = [
 ]
 dependencies = [
     "mcp[cli]>=1.3.0",
-    "elevenlabs>=0.2.26",
     "python-dotenv>=1.0.0",
 ]
 
 [project.scripts]
-ableton-mcp-extended = "MCP_Server.server:main"
+studioworks-core = "MCP_Server.server:main"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["MCP_Server", "elevenlabs_mcp"]
+packages = ["MCP_Server"]
 
 [project.urls]
-"Homepage" = "https://github.com/uisato/ableton-mcp-extended"
-"Bug Tracker" = "https://github.com/uisato/ableton-mcp-extended/issues"
-
-[project.optional-dependencies]
-xy_controller = [
-    "pynput>=1.7.6",
-    "screeninfo>=0.8.1",
-]
+"Homepage" = "https://github.com/mumumedia/studioworks-core"
+"Bug Tracker" = "https://github.com/mumumedia/studioworks-core/issues"
 
 [tool.pytest.ini_options]
 markers = [

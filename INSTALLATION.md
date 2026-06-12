@@ -1,5 +1,5 @@
 # Installation Guide
-**Get Ableton MCP Extended running in under 10 minutes**
+**Get Studioworks Core running in under 10 minutes**
 
 ---
 
@@ -26,8 +26,8 @@ First, clone the repository and install the required Python package.
 
 1.  **Clone the Repository:**
     ```bash
-    git clone https://github.com/uisato/ableton-mcp-extended.git
-    cd ableton-mcp-extended
+    git clone https://github.com/mumumedia/studioworks-core.git
+    cd studioworks-core
     ```
 
 2.  **Create a Virtual Environment and Install the Package:**
@@ -161,13 +161,13 @@ Choose your preferred AI assistant:
     "AbletonMCP": {
       "command": "python3",
       "args": [
-        "/path/to/ableton-mcp-extended/MCP_Server/server.py"
+        "/path/to/studioworks-core/MCP_Server/server.py"
       ]
     }
   }
 }
 ```
-> If using a virtual environment, replace `python3` with the full venv path: `/path/to/ableton-mcp-extended/.venv/bin/python`
+> If using a virtual environment, replace `python3` with the full venv path: `/path/to/studioworks-core/.venv/bin/python`
 
 **🪟 Windows:**
 ```json
@@ -176,7 +176,7 @@ Choose your preferred AI assistant:
     "AbletonMCP": {
       "command": "python",
       "args": [
-        "C:\\path\\to\\ableton-mcp-extended\\MCP_Server\\server.py"
+        "C:\\path\\to\\studioworks-core\\MCP_Server\\server.py"
       ]
     }
   }
@@ -189,13 +189,13 @@ Choose your preferred AI assistant:
 #### 🔍 Finding Your Installation Path
 **Windows:**
 ```bash
-# In your ableton-mcp-extended folder, run:
+# In your studioworks-core folder, run:
 echo %CD%\MCP_Server\server.py
 ```
 
 **macOS:**
 ```bash
-# In your ableton-mcp-extended folder, run:
+# In your studioworks-core folder, run:
 echo $PWD/MCP_Server/server.py
 ```
 
@@ -212,7 +212,7 @@ echo $PWD/MCP_Server/server.py
     "AbletonMCP": {
       "command": "python",
       "args": [
-        "C:/path/to/ableton-mcp-extended/MCP_Server/server.py"
+        "C:/path/to/studioworks-core/MCP_Server/server.py"
       ]
     }
   }
@@ -227,7 +227,7 @@ echo $PWD/MCP_Server/server.py
 Look for a **🔨 hammer icon** in the chat interface - this indicates MCP tools are loaded.
 
 **For Cursor:**
-You'll see a green dot next to the MCP server icon, and a message saying "40 tools enabled".
+You'll see a green dot next to the MCP server icon, and a message saying "50+ tools enabled".
 
 You might have to restart your AI assistant in order for changes to impact.
 
@@ -256,7 +256,7 @@ If all three commands work correctly, congratulations! 🎉 Your installation is
 <details>
 <summary><strong>⚡ High-Performance UDP Server (For Real-Time Control)</strong></summary>
 
-For ultra-low latency parameter control (like the XY Mouse Controller example):
+For ultra-low latency parameter control:
 
 1. **Install UDP Remote Script:**
    - Create folder: `Remote Scripts/AbletonMCP_UDP/`
@@ -266,50 +266,9 @@ For ultra-low latency parameter control (like the XY Mouse Controller example):
    - Add another Control Surface: "AbletonMCP_UDP"
    - Input/Output: "None"
 
-3. **Test XY Mouse Controller:**
-   ```bash
-   cd experimental_tools/xy_mouse_controller
-   pip install -r requirements.txt
-   python mouse_parameter_controller_udp.py
-   ```
-
 **Perfect for:** Live performance, real-time effects, expressive control.
 
 Note: both remote scripts (TCP and UDP) can co-exist without issues.
-</details>
-
-<details>
-<summary><strong>🎤 ElevenLabs Voice Integration</strong></summary>
-
-Add AI voice generation to your workflow:
-
-1. **Get ElevenLabs API Key:**
-   - Sign up at [elevenlabs.io](https://elevenlabs.io)
-   - Get your API key from account settings
-
-2. **Add to AI Assistant Config:**
-   ```json
-   {
-     "mcpServers": {
-       "AbletonMCP": {
-         "command": "python",
-         "args": ["C:/path/to/MCP_Server/server.py"]
-       },
-       "ElevenLabs": {
-         "command": "python",
-         "args": ["C:/path/to/elevenlabs_mcp/server.py"],
-         "env": {
-           "ELEVENLABS_API_KEY": "your-api-key-here"
-         }
-       }
-     }
-   }
-   ```
-
-3. **Test Voice Generation:**
-   Try: *"Generate a voice saying 'Hello from ElevenLabs' and import it into Ableton"*
-
-**Perfect for:** Vocals, narration, podcast production, creative voice effects
 </details>
 
 ---
@@ -387,14 +346,14 @@ pip install -e .
 
 Then update your MCP config to use the venv Python:
 ```json
-"command": "/path/to/ableton-mcp-extended/.venv/bin/python"
+"command": "/path/to/studioworks-core/.venv/bin/python"
 ```
 </details>
 
 <details>
 <summary><strong>🟡 MCP server doesn't start on Mac (existing installation)</strong></summary>
 
-If you previously installed ableton-mcp-extended with `"command": "python"` in your MCP config, it may fail on macOS where the command is `python3`.
+If you previously installed the server (as `ableton-mcp-extended` or `studioworks-core`) with `"command": "python"` in your MCP config, it may fail on macOS where the command is `python3`.
 
 **Solution:** Update your Claude Desktop or Cursor MCP config:
 ```json
@@ -403,7 +362,7 @@ If you previously installed ableton-mcp-extended with `"command": "python"` in y
 
 Or if using a virtual environment, use the full path:
 ```json
-"command": "/path/to/ableton-mcp-extended/.venv/bin/python"
+"command": "/path/to/studioworks-core/.venv/bin/python"
 ```
 
 Then restart your AI assistant.
@@ -432,7 +391,7 @@ python -c "import socket; s = socket.socket(); s.connect(('localhost', 9877)); p
 
 ## Capabilities Demonstration
 
-📹 **See Ableton MCP Extended in action:** [Link to your capabilities demonstration]
+📹 **See Studioworks Core in action:** [Link to your capabilities demonstration]
 
 ---
 
@@ -442,14 +401,14 @@ python -c "import socket; s = socket.socket(); s.connect(('localhost', 9877)); p
 
 ### 🚀 Next Steps:
 1. **[Watch the Demo Video](#-capabilities-demonstration)** - See the amazing possibilities
-2. **[Join the Community](https://patreon.com/uisato)** - Share your creations
+2. **[Join the Community](https://github.com/mumumedia/studioworks-core/discussions)** - Share your creations
 
 ---
 
 ## 💬 Need Help?
 
-- **🐛 Found a bug?** [Open an issue](https://github.com/uisato/ableton-mcp-extended/issues)
-- **❓ Have questions?** [Join discussions](https://github.com/uisato/ableton-mcp-extended/discussions)
+- **🐛 Found a bug?** [Open an issue](https://github.com/mumumedia/studioworks-core/issues)
+- **❓ Have questions?** [Join discussions](https://github.com/mumumedia/studioworks-core/discussions)
 
 ---
 
