@@ -54,9 +54,32 @@ For surgical control on a specific section:
 
 ### 3. Apply
 
-Use `add_device` and `set_device_parameter` to route. If the MCP server doesn't expose sidechain routing directly, write the parameters that *can* be set and tell the user the manual step:
+**There is no `add_device` MCP tool.** Adding the Compressor to the target track is always a manual step. Tell the user to do it first, then use `set_device_parameter` for everything else.
 
-> *"Compressor added to bass track with 4:1 ratio, 5ms attack, 100ms release. The MCP can't set the sidechain source — please click the sidechain section and select 'Kick' from the input dropdown manually. Then I'll dial in the threshold."*
+Instruct the user to:
+1. Click the target track
+2. Drag **Compressor** from Audio Effects into the device chain
+3. Expand the **Sidechain** section and set **Audio From** to the source track (e.g. Kick)
+4. Confirm done — then proceed with parameter setting below
+
+> *"Please add an Ableton Compressor to the [target] track, expand its Sidechain section, and set Audio From to [source]. Tell me when it's in place and I'll dial in the settings."*
+
+Once the user confirms, use `get_device_parameters` to read current values and confirm the compressor is present, then `set_device_parameter` for ratio, attack, release, threshold, and — critically — **`S/C On`**:
+
+**`S/C On` must be explicitly set to 1.0.** Routing the "Audio From" source in the UI and activating the sidechain are separate steps in Ableton's API. After the user does the manual routing, `S/C On` is still Off (0.0) until you set it.
+
+```
+set_device_parameter(track_index, device_index, parameter_name="S/C On", value=1.0)
+```
+
+**Parameter values are normalized 0–1, not the actual units.** `set_device_parameter` does not accept "150" for 150ms or "-18" for -18dB. Use this calibration loop:
+1. Set an estimated value
+2. Call `get_device_parameters` and read the `display_value`
+3. Adjust and repeat until the display matches the target
+
+For the Release parameter especially, the curve is logarithmic — small value changes produce large ms jumps at high values. Start low and step up.
+
+> *"Note: `add_device` is not yet implemented. A future enhancement could use `load_browser_item` with the device's browser URI to add native effects programmatically — deferred to Phase 5."*
 
 ### 4. Verify
 
