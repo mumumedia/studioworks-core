@@ -254,7 +254,7 @@ After all clips are placed and notes finalized, add subtle section-level volume 
 | Buildup 2 | 0 → +0.5 dB | Rise back to peak |
 | Outro (last 8 bars) | Fade to silence | Remove layers, then mute |
 
-Apply via `manage_clip_automation` with `parameter_name="volume"` on the target track's arrangement clips.
+Apply via `manage_clip_automation` with `parameter_name="volume"` on the target track's arrangement clips (note: for MIDI tracks, automate the instrument's output volume parameter or use track-level automation in Ableton, as MIDI clip envelopes do not natively control mixer volume).
 Keep adjustments to ±1–3 dB maximum — larger swings overwhelm the mix and mask dynamics.
 Do not apply master automation until all clip notes are finalized.
 
