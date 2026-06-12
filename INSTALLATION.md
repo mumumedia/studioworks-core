@@ -353,7 +353,7 @@ Then update your MCP config to use the venv Python:
 <details>
 <summary><strong>🟡 MCP server doesn't start on Mac (existing installation)</strong></summary>
 
-If you previously installed studioworks-core with `"command": "python"` in your MCP config, it may fail on macOS where the command is `python3`.
+If you previously installed the server (as `ableton-mcp-extended` or `studioworks-core`) with `"command": "python"` in your MCP config, it may fail on macOS where the command is `python3`.
 
 **Solution:** Update your Claude Desktop or Cursor MCP config:
 ```json
