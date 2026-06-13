@@ -7,7 +7,7 @@ import re
 import threading
 import time
 try:
-    from MCP_Server.plugin_aliases import get_categories, get_alias_for_param, resolve_alias
+    from .plugin_aliases import get_categories, get_alias_for_param, resolve_alias
 except ImportError:
     from plugin_aliases import get_categories, get_alias_for_param, resolve_alias
 
