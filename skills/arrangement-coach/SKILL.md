@@ -1,7 +1,7 @@
 ---
 name: arrangement-coach
 description: "Full arrangement structure guide for Ableton Arrangement View. Covers section templates, 5-genre bar maps, two workflows (build from scratch + promote Session View loops), drop/build transition patterns, master automation, and MCP tool workflow."
-genre: edm, house, techno, deep-house, lo-fi, pop, hip-hop
+genre: edm, house, techno, deep-house, lo-fi, pop, hip-hop, emotional-house, uk-garage
 ---
 
 # Arrangement Coach
@@ -83,6 +83,31 @@ Formula: Beats Start = (Start Bar − 1) × 4. Use `start_bar`/`end_bar` directl
 | Outro | 65 | 80 | 256.0 |
 
 No drops — energy builds through subtle layering and variation. Keep all velocities 10–15 below standard defaults for warmth (e.g. kick 95, snare 85, bass 75, pad 55).
+
+**Emotional House / UK Garage (Fred again, Bicep, Four Tet — 108–130 BPM, ~5 min, ~120 bars):**
+
+Characteristic sound: long sparse intro, vocal-led breakdown at emotional peak, no hard EDM drop formula. Energy builds through texture layering, not filter sweeps. Velocity restraint throughout — nothing hits full tilt until the peak.
+
+| Section | Start Bar | End Bar | Beats Start |
+|---------|-----------|---------|-------------|
+| Intro | 1 | 8 | 0.0 |
+| Verse 1 | 9 | 24 | 32.0 |
+| Pre-peak | 25 | 32 | 96.0 |
+| Peak | 33 | 64 | 128.0 |
+| Breakdown | 65 | 72 | 256.0 |
+| Rebuild | 73 | 80 | 288.0 |
+| Peak 2 | 81 | 112 | 320.0 |
+| Outro | 113 | 128 | 448.0 |
+
+Layer guidance:
+- Intro: texture/arp only — no drums, no bass
+- Verse 1: piano + bass + texture; drums enter quietly (loose pattern, low velocity)
+- Pre-peak: all tracks enter; keep drums at 70–80 velocity, pad underneath
+- Peak: full kit (tight pattern) + piano hi register + bass + pad hi-reg + arp; max velocity kick ~95 (not 110 — this genre stays warm)
+- Breakdown: piano + vocal only; everything else silent; this is the emotional moment
+- Rebuild: loose drums + bass + pad re-enter; same texture as pre-peak
+- Peak 2: same as Peak 1 or slight variation
+- Outro: strip to piano + pad + texture; fade over 8 bars
 
 **Pop / Hip-hop (95 BPM, ~3.5 min, ~84 bars):**
 
@@ -196,7 +221,9 @@ duplicate_clip_to_arrangement(
   destination_bar=<section start bar>    ← destination_bar, NOT start_bar
 )
 ```
-Repeat for each section the clip should appear in. The clip loops to fill the section length automatically.
+Each call places **one copy** of the clip at the destination — the clip does NOT auto-loop to fill the section. Calculate how many placements you need: `section_length_bars / clip_length_bars`. For a 4-bar clip covering a 32-bar drop, that is 8 calls at bars N, N+4, N+8 … N+28. Use a loop rather than listing every call manually.
+
+**Audio clips:** `duplicate_clip_to_arrangement` only works for session MIDI clips. Audio clips already in the arrangement cannot be moved or placed via MCP tools — they must be repositioned manually in Ableton's clip view. Flag this to the user before executing; do not attempt to move audio arrangement clips programmatically.
 
 **Step 5 — Create transition clips**
 For buildup sections not covered by existing session clips, create new clips:
@@ -263,6 +290,6 @@ Do not apply master automation until all clip notes are finalized.
 - Don't place clips without calling `get_arrangement_info` first — overlapping existing clips silently truncates them
 - Don't skip naming clips — unnamed clips cannot be targeted by `manage_clip_automation` `clip_name`
 - Don't skip the confirm-plan step — stating the mapping before execution prevents misplaced clips that are tedious to undo
-- Don't use velocity 100–127 on all elements in the drop — match genre-edm-production mix balance defaults (kick 110, snare 100, hats 85/65, bass 90, pad 65)
+- Don't use velocity 100–127 on all elements in the drop — match genre-edm-production mix balance defaults (kick 110, snare 100, hats 85/65, bass 90, pad 65); for emotional house keep kick ≤95 for warmth
 - Don't make breakdowns longer than 16 bars in House/Techno — listeners lose energy connection past that point
 - Don't apply master automation before clip notes are finalized — volume automation interacts with note velocities

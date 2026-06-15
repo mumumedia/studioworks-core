@@ -27,6 +27,7 @@ Map the reference to its known characteristics. Examples:
 | **Billie Eilish (early)** | Whisper vocal up close, sparse 808, finger snaps, sub-heavy mix, heavy automation, breath sounds intentionally left in |
 | **Skrillex** | Heavy modulation on bass (vocal-formant LFOs), drops with stutter edits, 14k+ shimmer on leads, super-wide stereo, side-chained pump |
 | **Hans Zimmer** | Massive low brass (often layered with synth), Trinity choir (low + bright), pulsing ostinatos, slow chord swells, 1-second+ reverb tails |
+| **Fred again..** | Vocal samples from voice notes/social media (heavy reverb, long decay, 35–45% wet); sparse piano melody (2–3 notes/bar, mid-register C4–G4, varying velocity 55–90, never block chords); half-time snare, syncopated kick, 8th-note hats with strong velocity variation (alternating ~75/38); sidechain kick→pad is the defining texture; warm bass boosted ~110–120Hz; 108–130 BPM; Am/minor keys; long sparse intro (texture/arp only); emotional breakdown = piano + vocal only, no drums; no hard EDM drops |
 | **Lo-fi hip hop (Lofigirl-style)** | Wurlitzer/Rhodes, jazz chords, vinyl crackle, tape saturation, 70-90 BPM, 50% wet drums, swung 16ths |
 
 ### 3. Translate to action

@@ -6,6 +6,11 @@ import logging
 import re
 import threading
 import time
+try:
+    from .plugin_aliases import get_categories, get_alias_for_param, resolve_alias
+except ImportError:
+    from plugin_aliases import get_categories, get_alias_for_param, resolve_alias
+
 from dataclasses import dataclass
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, Dict, Any, List, Union
@@ -1912,8 +1917,6 @@ def get_device_parameters(
     Specify category or show_all=True for full parameter details.
     """
     try:
-        from MCP_Server.plugin_aliases import get_categories, get_alias_for_param
-
         ableton = get_ableton_connection()
         ti = _to_zero_based(track_index, "track_index")
         di = _to_zero_based(device_index, "device_index")
@@ -2002,8 +2005,6 @@ def set_device_parameter(
     - value: Normalized value 0.0-1.0.
     """
     try:
-        from MCP_Server.plugin_aliases import resolve_alias
-
         ableton = get_ableton_connection()
         ti = _to_zero_based(track_index, "track_index")
         di = _to_zero_based(device_index, "device_index")

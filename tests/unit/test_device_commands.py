@@ -348,3 +348,48 @@ class TestNavigateDevicePreset:
 
         result = navigate_device_preset(MagicMock(), track_index=1, direction="next")
         assert "Error" in result
+
+
+class TestPluginAliasImportRobustness:
+    """Regression test: plugin_aliases must be importable at module load time,
+    not lazily inside functions — guards against No module named 'MCP_Server'."""
+
+    @patch('MCP_Server.server.get_ableton_connection')
+    def test_get_device_parameters_no_import_error(self, mock_conn):
+        # If plugin_aliases imports are at module level, calling the tool
+        # with a mock should never return the 'No module named' error string.
+        mock_ableton = MagicMock()
+        mock_ableton.send_command.return_value = {
+            "device_name": "Test", "device_class": "Test",
+            "parameter_count": 0, "parameters": [],
+        }
+        mock_conn.return_value = mock_ableton
+        result = get_device_parameters(MagicMock(), track_index=1)
+        assert "No module named" not in result
+
+    @patch('MCP_Server.server.get_ableton_connection')
+    def test_set_device_parameter_no_import_error(self, mock_conn):
+        # Same guard for set_device_parameter.
+        mock_ableton = MagicMock()
+        mock_ableton.send_command.side_effect = [
+            {"device_name": "Test", "parameters": []},
+            {"parameter_name": "Vol", "old_value": 0.0,
+             "new_value": 0.5, "display_value": "50%", "clamped": False},
+        ]
+        mock_conn.return_value = mock_ableton
+        result = set_device_parameter(MagicMock(), track_index=1,
+                                      parameter_name="Vol", value=0.5)
+        assert "No module named" not in result
+
+    def test_plugin_aliases_are_module_level_attributes(self):
+        # Structural guard: after the fix, get_categories / get_alias_for_param /
+        # resolve_alias must be callable attributes on the MCP_Server.server module.
+        # In the unfixed code (lazy imports), these names do NOT exist at module level.
+        # This test would FAIL on the unfixed code and PASS on the fix.
+        import MCP_Server.server as srv
+        assert callable(getattr(srv, 'get_categories', None)), \
+            "get_categories must be a module-level import in server.py (not lazy)"
+        assert callable(getattr(srv, 'get_alias_for_param', None)), \
+            "get_alias_for_param must be a module-level import in server.py (not lazy)"
+        assert callable(getattr(srv, 'resolve_alias', None)), \
+            "resolve_alias must be a module-level import in server.py (not lazy)"
